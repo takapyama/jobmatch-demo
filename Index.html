@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motify — Unleash motivation. Unlock performance.</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1a2744;--navy-mid:#2d3f6b;--navy-light:#e8ecf5;
+  --accent:#e8532a;--accent-light:#fdf0eb;
+  --green:#1a6b4a;--green-light:#e8f5ee;
+  --purple:#5b3fa0;--purple-light:#f0ebff;
+  --gray-50:#f8f9fa;--gray-100:#f1f3f5;--gray-200:#e9ecef;
+  --gray-400:#adb5bd;--gray-600:#6c757d;--gray-800:#343a40;
+  --white:#ffffff;
+  --border:rgba(0,0,0,0.08);
+  --radius:8px;--radius-lg:12px;--radius-xl:16px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.1);
+}
+
+body{font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans','Yu Gothic UI',sans-serif;background:var(--gray-50);color:var(--gray-800);font-size:14px;line-height:1.6}
+
+/* Layout */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:var(--navy);color:var(--white);display:flex;flex-direction:column;flex-shrink:0}
+.main{flex:1;overflow-y:auto;background:var(--gray-50)}
+
+/* Sidebar */
+.logo{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.logo-name{font-size:17px;font-weight:700;letter-spacing:-0.02em;color:var(--white)}
+.logo-sub{font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;letter-spacing:0.04em}
+.sidebar-section{padding:16px 10px 4px;font-size:10px;font-weight:600;letter-spacing:0.08em;color:rgba(255,255,255,0.35);text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,0.65);font-size:13px;margin:1px 6px;transition:all 0.12s}
+.nav-item:hover{background:rgba(255,255,255,0.08);color:var(--white)}
+.nav-item.active{background:rgba(255,255,255,0.14);color:var(--white);font-weight:500}
+.nav-icon{width:16px;text-align:center;font-size:14px;flex-shrink:0}
+.sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,0.1)}
+.user-pill{display:flex;align-items:center;gap:8px}
+.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.avatar-blue{background:rgba(255,255,255,0.15);color:var(--white)}
+.user-name{font-size:12px;color:rgba(255,255,255,0.7)}
+.user-role{font-size:10px;color:rgba(255,255,255,0.4)}
+
+/* Pages */
+.page{display:none;padding:24px 28px;min-height:100%}
+.page.active{display:block}
+.page-header{margin-bottom:20px}
+.page-title{font-size:20px;font-weight:700;color:var(--navy);letter-spacing:-0.02em}
+.page-sub{font-size:13px;color:var(--gray-600);margin-top:3px}
+
+/* Cards */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card-title{font-size:13px;font-weight:600;color:var(--gray-800);margin-bottom:12px}
+
+/* Stat cards */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow)}
+.stat-val{font-size:26px;font-weight:700;color:var(--navy);letter-spacing:-0.03em;line-height:1}
+.stat-label{font-size:11px;color:var(--gray-600);margin-top:4px}
+.stat-delta{font-size:11px;margin-top:6px;font-weight:500}
+.delta-up{color:var(--green)}
+.delta-neutral{color:var(--gray-400)}
+
+/* Badges */
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.badge-open{background:#e8f5ee;color:#1a6b4a}
+.badge-scout{background:#fdf0eb;color:#c04a1f}
+.badge-applied{background:#f0ebff;color:#5b3fa0}
+.badge-closed{background:var(--gray-100);color:var(--gray-600)}
+.badge-match{background:#e8ecf5;color:var(--navy-mid)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--gray-800);transition:all 0.12s}
+.btn:hover{background:var(--gray-100)}
+.btn-primary{background:var(--navy);color:var(--white);border-color:var(--navy)}
+.btn-primary:hover{background:var(--navy-mid)}
+.btn-accent{background:var(--accent);color:var(--white);border-color:var(--accent)}
+.btn-accent:hover{opacity:0.88}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;font-weight:600;color:var(--gray-600);padding:8px 12px;border-bottom:1px solid var(--border);letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--gray-50)}
+.td-name{font-weight:500;color:var(--navy)}
+
+/* Job cards */
+.job-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.job-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow);cursor:pointer;transition:all 0.15s}
+.job-card:hover{border-color:var(--navy-light);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.job-card.applied{border-color:#c084fc;border-width:1.5px}
+.job-dept{font-size:10px;font-weight:600;color:var(--gray-600);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px}
+.job-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:8px;line-height:1.3}
+.job-desc{font-size:12px;color:var(--gray-600);line-height:1.6;margin-bottom:12px}
+.job-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.job-tag{font-size:11px;background:var(--navy-light);color:var(--navy-mid);padding:2px 8px;border-radius:20px}
+.job-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px;margin-top:4px}
+.job-meta{font-size:11px;color:var(--gray-600)}
+.applicants-bar{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--gray-600)}
+.bar-outer{width:60px;height:5px;background:var(--gray-200);border-radius:4px;overflow:hidden}
+.bar-inner{height:100%;border-radius:4px;background:var(--accent)}
+
+/* Match cards */
+.match-list{display:flex;flex-direction:column;gap:10px}
+.match-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}
+.match-card.top{border-color:#fbbf24;border-width:1.5px}
+.match-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;color:var(--white)}
+.match-info{flex:1}
+.match-name{font-size:14px;font-weight:600;color:var(--navy)}
+.match-meta{font-size:12px;color:var(--gray-600);margin-top:1px}
+.match-anchors{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.match-score{text-align:right;flex-shrink:0}
+.score-num{font-size:22px;font-weight:700;color:var(--navy);letter-spacing:-0.03em}
+.score-label{font-size:10px;color:var(--gray-600)}
+.score-bar{width:60px;height:4px;background:var(--gray-200);border-radius:4px;overflow:hidden;margin:4px 0 0 auto}
+.score-fill{height:100%;border-radius:4px}
+
+/* Form */
+.form-section{margin-bottom:20px}
+.form-label{font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:5px;display:flex;align-items:center;gap:4px}
+.req{color:var(--accent)}
+.form-input,.form-select,.form-textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;color:var(--gray-800);background:var(--white);transition:border 0.12s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--navy-mid)}
+.form-textarea{min-height:72px;resize:vertical;line-height:1.6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.form-hint{font-size:11px;color:var(--gray-400);margin-top:4px}
+.anchor-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.anchor-btn{border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;cursor:pointer;background:var(--white);text-align:left;transition:all 0.12s;width:100%}
+.anchor-btn:hover{border-color:var(--navy-mid);background:var(--navy-light)}
+.anchor-btn.sel{border-color:var(--purple);background:var(--purple-light)}
+.anchor-btn.sel .an{color:var(--purple)}
+.an{font-size:12px;font-weight:600;color:var(--navy)}
+.ad{font-size:11px;color:var(--gray-600);margin-top:1px}
+
+/* Activity feed */
+.feed{display:flex;flex-direction:column;gap:0}
+.feed-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.feed-item:last-child{border-bottom:none}
+.feed-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.feed-body{flex:1}
+.feed-text{font-size:13px;color:var(--gray-800)}
+.feed-time{font-size:11px;color:var(--gray-400);margin-top:2px}
+
+/* Section label */
+.section-eyebrow{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-400);margin-bottom:10px}
+
+/* Top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.topbar-title{font-size:14px;font-weight:600;color:var(--navy)}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:var(--white);padding:12px 18px;border-radius:var(--radius-lg);font-size:13px;font-weight:500;box-shadow:var(--shadow-md);transform:translateY(80px);opacity:0;transition:all 0.25s;z-index:999;display:flex;align-items:center;gap:8px}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* Modal overlay */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--white);border-radius:var(--radius-xl);padding:24px 26px;width:520px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.modal-header{display:flex;align-items:start;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:700;color:var(--navy)}
+.modal-close{cursor:pointer;color:var(--gray-400);font-size:20px;line-height:1;padding:2px 4px}
+.modal-close:hover{color:var(--gray-800)}
+.detail-row{display:flex;gap:8px;margin-bottom:10px;font-size:13px}
+.detail-key{width:110px;flex-shrink:0;color:var(--gray-600);font-weight:500}
+.detail-val{color:var(--gray-800);line-height:1.6}
+
+/* Responsive tweak */
+@media(max-width:768px){
+  .sidebar{width:180px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .job-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo">
+    
+    <div class="logo-name">Motify</div><div class="logo-sub">Unleash motivation.</div>
+  </div>
+
+  <div id="sidebar-hr" style="display:block">
+    <div class="sidebar-section">人事管理</div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">⊞</span>ダッシュボード</div>
+    <div class="nav-item" onclick="showPage('jobs')"><span class="nav-icon">≡</span>Job一覧・登録</div>
+    <div class="nav-item" onclick="showPage('matching')"><span class="nav-icon">◎</span>マッチング結果</div>
+    <div class="sidebar-section">設定</div>
+    <div class="nav-item" onclick="switchRole()"><span class="nav-icon">⇄</span>社員画面に切替</div>
+  </div>
+
+  <div id="sidebar-emp" style="display:none">
+    <div class="sidebar-section">社員メニュー</div>
+    <div class="nav-item active" onclick="showPage('job-list')"><span class="nav-icon">🔍</span>Job一覧を見る</div>
+    <div class="nav-item" onclick="showPage('profile-form')"><span class="nav-icon">👤</span>プロフィール入力</div>
+    <div class="sidebar-section">設定</div>
+    <div class="nav-item" onclick="switchRole()"><span class="nav-icon">⇄</span>人事画面に切替</div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar avatar-blue" id="avatar-initials">鈴</div>
+      <div>
+        <div class="user-name" id="user-name">鈴木 花子</div>
+        <div class="user-role" id="user-role">人事部</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+<!-- ===== DASHBOARD ===== -->
+<div class="page active" id="page-dashboard">
+  <div class="topbar">
+    <div class="topbar-title">ダッシュボード</div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary btn-sm" onclick="showPage('jobs')">＋ Job登録</button>
+    </div>
+  </div>
+  <div style="padding:24px 28px">
+    <div class="page-header">
+      <div class="page-title">こんにちは、鈴木さん</div>
+      <div class="page-sub">株式会社東洋トレーディング — Motify状況</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-val">8</div>
+        <div class="stat-label">公開中のJob</div>
+        <div class="stat-delta delta-up">▲ 2 先月比</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">47</div>
+        <div class="stat-label">プロフィール登録済み社員</div>
+        <div class="stat-delta delta-up">▲ 12 先月比</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">23</div>
+        <div class="stat-label">応募・エントリー数</div>
+        <div class="stat-delta delta-up">▲ 8 先月比</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">3</div>
+        <div class="stat-label">マッチング確定</div>
+        <div class="stat-delta delta-neutral">― 今月</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px">
+      <div class="card">
+        <div class="card-title">注目のマッチング候補</div>
+        <div class="match-list">
+          <div class="match-card top" style="cursor:pointer" onclick="showPage('matching')">
+            <div class="match-avatar" style="background:#2d3f6b">田</div>
+            <div class="match-info">
+              <div class="match-name">田中 誠一</div>
+              <div class="match-meta">食品部 営業 · 在籍8年</div>
+              <div class="match-anchors">
+                <span class="badge badge-match">起業家的創造性</span>
+                <span class="badge badge-match">純粋な挑戦</span>
+              </div>
+            </div>
+            <div class="match-score">
+              <div class="score-num">92</div>
+              <div class="score-label">マッチ度</div>
+              <div class="score-bar"><div class="score-fill" style="width:92%;background:#e8532a"></div></div>
+            </div>
+          </div>
+          <div class="match-card" style="cursor:pointer" onclick="showPage('matching')">
+            <div class="match-avatar" style="background:#5b3fa0">佐</div>
+            <div class="match-info">
+              <div class="match-name">佐藤 美咲</div>
+              <div class="match-meta">管理部 経理 · 在籍5年</div>
+              <div class="match-anchors">
+                <span class="badge badge-match">専門・職能別</span>
+              </div>
+            </div>
+            <div class="match-score">
+              <div class="score-num">84</div>
+              <div class="score-label">マッチ度</div>
+              <div class="score-bar"><div class="score-fill" style="width:84%;background:#5b3fa0"></div></div>
+            </div>
+          </div>
+          <div class="match-card" style="cursor:pointer" onclick="showPage('matching')">
+            <div class="match-avatar" style="background:#1a6b4a">山</div>
+            <div class="match-info">
+              <div class="match-name">山本 健太</div>
+              <div class="match-meta">素材部 営業 · 在籍6年</div>
+              <div class="match-anchors">
+                <span class="badge badge-match">全般管理</span>
+                <span class="badge badge-match">奉仕・社会貢献</span>
+              </div>
+            </div>
+            <div class="match-score">
+              <div class="score-num">79</div>
+              <div class="score-label">マッチ度</div>
+              <div class="score-bar"><div class="score-fill" style="width:79%;background:#1a6b4a"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">最近のアクティビティ</div>
+        <div class="feed">
+          <div class="feed-item">
+            <div class="feed-dot" style="background:#e8532a"></div>
+            <div class="feed-body">
+              <div class="feed-text"><strong>田中 誠一</strong> が「東南アジア新規開拓担当」に応募</div>
+              <div class="feed-time">2時間前</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot" style="background:#5b3fa0"></div>
+            <div class="feed-body">
+              <div class="feed-text"><strong>中村 陽子</strong> がプロフィールを更新</div>
+              <div class="feed-time">4時間前</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot" style="background:#1a6b4a"></div>
+            <div class="feed-body">
+              <div class="feed-text">「経営企画スタッフ」Jobを公開しました</div>
+              <div class="feed-time">昨日</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot" style="background:#1a2744"></div>
+            <div class="feed-body">
+              <div class="feed-text"><strong>山本 健太</strong> へスカウトを送信</div>
+              <div class="feed-time">昨日</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot" style="background:#adb5bd"></div>
+            <div class="feed-body">
+              <div class="feed-text"><strong>小林 浩二</strong> が「食品部 営業マネージャー」に応募</div>
+              <div class="feed-time">2日前</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== JOB LIST / REGISTER ===== -->
+<div class="page" id="page-jobs">
+  <div class="topbar">
+    <div class="topbar-title">Job一覧・登録</div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary btn-sm" onclick="openJobModal()">＋ 新規Job登録</button>
+    </div>
+  </div>
+  <div style="padding:24px 28px">
+    <div class="card" style="margin-bottom:20px">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ポジション名</th>
+              <th>部署</th>
+              <th>募集人数</th>
+              <th>応募数</th>
+              <th>着任希望</th>
+              <th>ステータス</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-name">東南アジア新規開拓担当</td>
+              <td>海外事業部</td>
+              <td>1名</td>
+              <td>5名</td>
+              <td>2026年10月</td>
+              <td><span class="badge badge-open">募集中</span></td>
+              <td><button class="btn btn-sm" onclick="showMatchingForJob('東南アジア新規開拓担当')">マッチング確認</button></td>
+            </tr>
+            <tr>
+              <td class="td-name">食品部 営業マネージャー</td>
+              <td>食品部</td>
+              <td>1名</td>
+              <td>3名</td>
+              <td>2026年10月</td>
+              <td><span class="badge badge-open">募集中</span></td>
+              <td><button class="btn btn-sm" onclick="showMatchingForJob('食品部 営業マネージャー')">マッチング確認</button></td>
+            </tr>
+            <tr>
+              <td class="td-name">経営企画スタッフ</td>
+              <td>経営企画部</td>
+              <td>2名</td>
+              <td>7名</td>
+              <td>2027年1月</td>
+              <td><span class="badge badge-open">募集中</span></td>
+              <td><button class="btn btn-sm" onclick="showMatchingForJob('経営企画スタッフ')">マッチング確認</button></td>
+            </tr>
+            <tr>
+              <td class="td-name">素材部 海外営業リーダー</td>
+              <td>素材・化学部</td>
+              <td>1名</td>
+              <td>2名</td>
+              <td>2026年10月</td>
+              <td><span class="badge badge-scout">スカウト中</span></td>
+              <td><button class="btn btn-sm" onclick="showMatchingForJob('素材部 海外営業リーダー')">マッチング確認</button></td>
+            </tr>
+            <tr>
+              <td class="td-name">人事企画担当</td>
+              <td>人事部</td>
+              <td>1名</td>
+              <td>4名</td>
+              <td>2027年4月</td>
+              <td><span class="badge badge-open">募集中</span></td>
+              <td><button class="btn btn-sm">マッチング確認</button></td>
+            </tr>
+            <tr>
+              <td class="td-name">機械部門 技術営業</td>
+              <td>機械・インフラ部</td>
+              <td>2名</td>
+              <td>6名</td>
+              <td>2026年10月</td>
+              <td><span class="badge badge-open">募集中</span></td>
+              <td><button class="btn btn-sm">マッチング確認</button></td>
+            </tr>
+            <tr>
+              <td class="td-name">DX推進担当</td>
+              <td>経営企画部</td>
+              <td>1名</td>
+              <td>1名</td>
+              <td>2027年1月</td>
+              <td><span class="badge badge-applied">選考中</span></td>
+              <td><button class="btn btn-sm">マッチング確認</button></td>
+            </tr>
+            <tr>
+              <td class="td-name">中国語圏営業担当</td>
+              <td>海外事業部</td>
+              <td>1名</td>
+              <td>—</td>
+              <td>2027年4月</td>
+              <td><span class="badge badge-closed">準備中</span></td>
+              <td><button class="btn btn-sm" style="opacity:0.4" disabled>マッチング確認</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MATCHING ===== -->
+<div class="page" id="page-matching">
+  <div class="topbar">
+    <div class="topbar-title" id="matching-topbar-title">マッチング結果 — 東南アジア新規開拓担当</div>
+    <div class="topbar-actions">
+      <select class="form-select" style="width:220px;font-size:12px" onchange="changeMatchingJob(this.value)">
+        <option>東南アジア新規開拓担当</option>
+        <option>食品部 営業マネージャー</option>
+        <option>経営企画スタッフ</option>
+        <option>素材部 海外営業リーダー</option>
+      </select>
+    </div>
+  </div>
+  <div style="padding:24px 28px">
+    <div style="display:grid;grid-template-columns:1fr 1.8fr;gap:14px">
+      <div>
+        <div class="card">
+          <div class="section-eyebrow">Job概要</div>
+          <div class="detail-row"><div class="detail-key">ポジション</div><div class="detail-val" style="font-weight:600;color:var(--navy)">東南アジア新規開拓担当</div></div>
+          <div class="detail-row"><div class="detail-key">部署</div><div class="detail-val">海外事業部</div></div>
+          <div class="detail-row"><div class="detail-key">業務内容</div><div class="detail-val">タイ・ベトナム向け新規顧客開拓、提案・クロージング、現地パートナー管理</div></div>
+          <div class="detail-row"><div class="detail-key">期待役割</div><div class="detail-val">東南アジア事業の先陣を切り、現地ネットワークを構築するパイオニア</div></div>
+          <div class="detail-row"><div class="detail-key">必須スキル</div><div class="detail-val">法人営業5年以上、英語ビジネスレベル</div></div>
+          <div class="detail-row"><div class="detail-key">求めるスタンス</div><div class="detail-val">自律的・挑戦志向・不確実な環境への耐性</div></div>
+          <div class="detail-row"><div class="detail-key">この先の期待</div><div class="detail-val">3年後に現地法人設立を牽引できる人材へ</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="section-eyebrow">マッチング候補（スコア順）</div>
+          <div class="match-list">
+            <div class="match-card top">
+              <div class="match-avatar" style="background:#e8532a">田</div>
+              <div class="match-info">
+                <div class="match-name">田中 誠一 <span style="font-size:11px;color:var(--gray-600);font-weight:400">· 食品部営業 8年</span></div>
+                <div class="match-meta">英語 ビジネスレベル · タイ語 日常会話 · TOEIC 870</div>
+                <div class="match-anchors" style="margin-top:5px">
+                  <span class="badge badge-match">起業家的創造性</span>
+                  <span class="badge badge-match">純粋な挑戦</span>
+                  <span class="badge badge-open" style="font-size:10px">応募済み</span>
+                </div>
+                <div style="font-size:11px;color:var(--gray-600);margin-top:4px">「東南アジアでゼロから事業を立ち上げることに挑戦したい」</div>
+              </div>
+              <div class="match-score">
+                <div class="score-num" style="color:var(--accent)">92</div>
+                <div class="score-label">マッチ度</div>
+                <div class="score-bar"><div class="score-fill" style="width:92%;background:var(--accent)"></div></div>
+                <button class="btn btn-accent btn-sm" style="margin-top:8px;width:100%" onclick="showToast('田中 誠一 にスカウトを送りました')">スカウト</button>
+              </div>
+            </div>
+            <div class="match-card">
+              <div class="match-avatar" style="background:#1a2744">渡</div>
+              <div class="match-info">
+                <div class="match-name">渡辺 拓也 <span style="font-size:11px;color:var(--gray-600);font-weight:400">· 素材部営業 6年</span></div>
+                <div class="match-meta">英語 ビジネスレベル · 中国語 日常会話 · MBA取得中</div>
+                <div class="match-anchors" style="margin-top:5px">
+                  <span class="badge badge-match">全般管理コンピタンス</span>
+                  <span class="badge badge-match">起業家的創造性</span>
+                </div>
+                <div style="font-size:11px;color:var(--gray-600);margin-top:4px">「グローバルビジネスの現場でリーダーシップを発揮したい」</div>
+              </div>
+              <div class="match-score">
+                <div class="score-num">85</div>
+                <div class="score-label">マッチ度</div>
+                <div class="score-bar"><div class="score-fill" style="width:85%;background:var(--navy)"></div></div>
+                <button class="btn btn-primary btn-sm" style="margin-top:8px;width:100%" onclick="showToast('渡辺 拓也 にスカウトを送りました')">スカウト</button>
+              </div>
+            </div>
+            <div class="match-card">
+              <div class="match-avatar" style="background:#5b3fa0">木</div>
+              <div class="match-info">
+                <div class="match-name">木村 さやか <span style="font-size:11px;color:var(--gray-600);font-weight:400">· 海外事業部 4年</span></div>
+                <div class="match-meta">英語 ネイティブレベル · タイ赴任経験あり</div>
+                <div class="match-anchors" style="margin-top:5px">
+                  <span class="badge badge-match">自律・独立</span>
+                  <span class="badge badge-match">純粋な挑戦</span>
+                </div>
+                <div style="font-size:11px;color:var(--gray-600);margin-top:4px">「現地で深く関わり、自分の足で市場を開拓したい」</div>
+              </div>
+              <div class="match-score">
+                <div class="score-num">81</div>
+                <div class="score-label">マッチ度</div>
+                <div class="score-bar"><div class="score-fill" style="width:81%;background:var(--purple)"></div></div>
+                <button class="btn btn-sm" style="margin-top:8px;width:100%" onclick="showToast('木村 さやか にスカウトを送りました')">スカウト</button>
+              </div>
+            </div>
+            <div class="match-card">
+              <div class="match-avatar" style="background:#1a6b4a">加</div>
+              <div class="match-info">
+                <div class="match-name">加藤 隆史 <span style="font-size:11px;color:var(--gray-600);font-weight:400">· 機械部営業 7年</span></div>
+                <div class="match-meta">英語 日常会話レベル · プロジェクト管理経験</div>
+                <div class="match-anchors" style="margin-top:5px">
+                  <span class="badge badge-match">奉仕・社会貢献</span>
+                </div>
+                <div style="font-size:11px;color:var(--gray-600);margin-top:4px">「インフラ整備を通じてアジアの発展に貢献したい」</div>
+              </div>
+              <div class="match-score">
+                <div class="score-num">72</div>
+                <div class="score-label">マッチ度</div>
+                <div class="score-bar"><div class="score-fill" style="width:72%;background:var(--green)"></div></div>
+                <button class="btn btn-sm" style="margin-top:8px;width:100%" onclick="showToast('加藤 隆史 にスカウトを送りました')">スカウト</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== JOB LIST (Employee) ===== -->
+<div class="page" id="page-job-list">
+  <div class="topbar">
+    <div class="topbar-title">公開中のJob</div>
+  </div>
+  <div style="padding:24px 28px">
+    <div class="page-header">
+      <div class="page-title">公開中のJob</div>
+      <div class="page-sub">興味のあるポジションを確認し、応募してください。</div>
+    </div>
+    <div class="job-grid">
+      <div class="job-card applied">
+        <div class="job-dept">海外事業部</div>
+        <div class="job-title">東南アジア新規開拓担当</div>
+        <div class="job-desc">タイ・ベトナム向けに新規顧客を開拓し、現地パートナーとともに東洋トレーディングの海外事業を牽引するポジションです。</div>
+        <div class="job-tags">
+          <span class="job-tag">法人営業5年以上</span>
+          <span class="job-tag">英語ビジネスレベル</span>
+          <span class="job-tag">自律・挑戦志向</span>
+        </div>
+        <div class="job-footer">
+          <div>
+            <div class="job-meta">着任希望 2026年10月 · 1名</div>
+            <div class="applicants-bar" style="margin-top:4px">
+              <div class="bar-outer"><div class="bar-inner" style="width:70%"></div></div>
+              <span>応募5名</span>
+            </div>
+          </div>
+          <span class="badge badge-applied">応募済み</span>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-dept">食品部</div>
+        <div class="job-title">食品部 営業マネージャー</div>
+        <div class="job-desc">食品商材の主力顧客を担当しながら、若手3名のチームを率いるプレイングマネージャーポジションです。</div>
+        <div class="job-tags">
+          <span class="job-tag">法人営業3年以上</span>
+          <span class="job-tag">マネジメント経験歓迎</span>
+          <span class="job-tag">食品業界知識</span>
+        </div>
+        <div class="job-footer">
+          <div>
+            <div class="job-meta">着任希望 2026年10月 · 1名</div>
+            <div class="applicants-bar" style="margin-top:4px">
+              <div class="bar-outer"><div class="bar-inner" style="width:42%"></div></div>
+              <span>応募3名</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="applyJob(this,'食品部 営業マネージャー')">応募する</button>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-dept">経営企画部</div>
+        <div class="job-title">経営企画スタッフ</div>
+        <div class="job-desc">中期経営計画の策定・推進をサポートし、全社横断のプロジェクトに参加します。将来の経営人材育成を見据えたポジションです。</div>
+        <div class="job-tags">
+          <span class="job-tag">数値分析力</span>
+          <span class="job-tag">資料作成スキル</span>
+          <span class="job-tag">部門横断経験</span>
+        </div>
+        <div class="job-footer">
+          <div>
+            <div class="job-meta">着任希望 2027年1月 · 2名</div>
+            <div class="applicants-bar" style="margin-top:4px">
+              <div class="bar-outer"><div class="bar-inner" style="width:90%"></div></div>
+              <span>応募7名</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="applyJob(this,'経営企画スタッフ')">応募する</button>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-dept">素材・化学部</div>
+        <div class="job-title">素材部 海外営業リーダー</div>
+        <div class="job-desc">化学素材の海外顧客（韓国・台湾・中国）を担当し、チームの営業戦略立案から実行までをリードするポジションです。</div>
+        <div class="job-tags">
+          <span class="job-tag">素材・化学業界知識</span>
+          <span class="job-tag">英語または中国語</span>
+          <span class="job-tag">リーダーシップ</span>
+        </div>
+        <div class="job-footer">
+          <div>
+            <div class="job-meta">着任希望 2026年10月 · 1名</div>
+            <div class="applicants-bar" style="margin-top:4px">
+              <div class="bar-outer"><div class="bar-inner" style="width:28%"></div></div>
+              <span>応募2名</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="applyJob(this,'素材部 海外営業リーダー')">応募する</button>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-dept">人事部</div>
+        <div class="job-title">人事企画担当</div>
+        <div class="job-desc">採用・配置・評価制度の企画・運用を担当します。このMotifyシステムの社内推進担当としての役割も期待されます。</div>
+        <div class="job-tags">
+          <span class="job-tag">人事経験歓迎</span>
+          <span class="job-tag">制度設計興味</span>
+        </div>
+        <div class="job-footer">
+          <div>
+            <div class="job-meta">着任希望 2027年4月 · 1名</div>
+            <div class="applicants-bar" style="margin-top:4px">
+              <div class="bar-outer"><div class="bar-inner" style="width:55%"></div></div>
+              <span>応募4名</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="applyJob(this,'人事企画担当')">応募する</button>
+        </div>
+      </div>
+      <div class="job-card">
+        <div class="job-dept">機械・インフラ部</div>
+        <div class="job-title">機械部門 技術営業</div>
+        <div class="job-desc">プラント・インフラ向け機械商材の技術提案営業。エンジニアと連携しながら顧客課題を解決するソリューション型の営業職です。</div>
+        <div class="job-tags">
+          <span class="job-tag">技術的素養</span>
+          <span class="job-tag">法人営業経験</span>
+          <span class="job-tag">粘り強さ</span>
+        </div>
+        <div class="job-footer">
+          <div>
+            <div class="job-meta">着任希望 2026年10月 · 2名</div>
+            <div class="applicants-bar" style="margin-top:4px">
+              <div class="bar-outer"><div class="bar-inner" style="width:78%"></div></div>
+              <span>応募6名</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="applyJob(this,'機械部門 技術営業')">応募する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROFILE FORM ===== -->
+<div class="page" id="page-profile-form">
+  <div class="topbar">
+    <div class="topbar-title">プロフィール入力</div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary btn-sm" onclick="saveProfile()">保存する</button>
+    </div>
+  </div>
+  <div style="padding:24px 28px;max-width:680px">
+    <div class="card">
+      <div class="section-eyebrow">基本情報</div>
+      <div class="form-row" style="margin-bottom:10px">
+        <div><div class="form-label">氏名 <span class="req">*</span></div><input class="form-input" value="田中 誠一"></div>
+        <div><div class="form-label">所属部署 <span class="req">*</span></div><input class="form-input" value="食品部 営業グループ"></div>
+      </div>
+      <div class="form-row3">
+        <div><div class="form-label">役職 <span class="req">*</span></div><input class="form-input" value="主任"></div>
+        <div><div class="form-label">入社年 <span class="req">*</span></div><input class="form-input" value="2016年"></div>
+        <div><div class="form-label">現職在籍年数</div><input class="form-input" value="8年"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-eyebrow">現在のAbility</div>
+      <div style="margin-bottom:10px">
+        <div class="form-label">業務経験 <span class="req">*</span></div>
+        <textarea class="form-textarea">食品商材の法人営業 8年（うち大手スーパー・CVS担当 5年、東南アジア担当 2年）。新規開拓・提案・クロージングを一貫して担当。年間新規顧客15社開拓の実績あり。</textarea>
+      </div>
+      <div class="form-row" style="margin-bottom:10px">
+        <div>
+          <div class="form-label">保有資格・スキル <span class="req">*</span></div>
+          <textarea class="form-textarea" style="min-height:56px">TOEIC 870点、Salesforce認定、Excel VBA（業務自動化経験あり）</textarea>
+        </div>
+        <div>
+          <div class="form-label">語学力 <span class="req">*</span></div>
+          <textarea class="form-textarea" style="min-height:56px">英語 ビジネスレベル（商談・メール対応可）&#10;タイ語 日常会話レベル</textarea>
+        </div>
+      </div>
+      <div>
+        <div class="form-label">自分の強み <span class="req">*</span></div>
+        <textarea class="form-textarea">顧客との長期的な信頼関係の構築が得意。初対面の顧客でも3回の面談以内に本音の課題を引き出せる。数字への感度が高く、データをもとに提案を組み立てることができる。</textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-eyebrow">キャリアアンカー</div>
+      <div style="font-size:12px;color:var(--gray-600);margin-bottom:10px">仕事で絶対に譲れない価値観を1〜2つ選んでください</div>
+      <div class="anchor-grid" id="pf-anchors">
+        <button class="anchor-btn" onclick="toggleAnchor(this)"><div class="an">1. 専門・職能別コンピタンス</div><div class="ad">特定分野のプロとして専門性を深めたい</div></button>
+        <button class="anchor-btn" onclick="toggleAnchor(this)"><div class="an">2. 全般管理コンピタンス</div><div class="ad">組織を統括・マネジメントする立場になりたい</div></button>
+        <button class="anchor-btn" onclick="toggleAnchor(this)"><div class="an">3. 自律・独立</div><div class="ad">自分のやり方・ペースで自由に仕事したい</div></button>
+        <button class="anchor-btn" onclick="toggleAnchor(this)"><div class="an">4. 保障・安定</div><div class="ad">安定した環境・雇用・収入を重視したい</div></button>
+        <button class="anchor-btn sel" onclick="toggleAnchor(this)"><div class="an">5. 起業家的創造性</div><div class="ad">新しいものをゼロから作り出したい</div></button>
+        <button class="anchor-btn" onclick="toggleAnchor(this)"><div class="an">6. 奉仕・社会貢献</div><div class="ad">社会や人の役に立つ仕事をしたい</div></button>
+        <button class="anchor-btn sel" onclick="toggleAnchor(this)"><div class="an">7. 純粋な挑戦</div><div class="ad">困難な問題・競争に勝つことにやりがいを感じる</div></button>
+        <button class="anchor-btn" onclick="toggleAnchor(this)"><div class="an">8. 生活様式</div><div class="ad">仕事とプライベートのバランスを大切にしたい</div></button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-eyebrow">志向・動機</div>
+      <div style="margin-bottom:10px">
+        <div class="form-label">今後挑戦したいこと <span class="req">*</span></div>
+        <textarea class="form-textarea" style="min-height:96px">これまでの営業経験を活かしながら、東南アジアでゼロから事業を立ち上げることに挑戦したい。現地のパートナーと協力しながら、日本企業の海外展開を支援するような仕事に携わりたいと思っている。タイでの赴任経験を活かし、現地の文化・ビジネス慣習を理解した営業ができると自負している。</textarea>
+      </div>
+      <div>
+        <div class="form-label">希望する働き方 <span class="req">*</span></div>
+        <select class="form-select">
+          <option>マネジメント志向（チームや組織を動かす立場へ）</option>
+          <option selected>専門職志向（特定領域のプロとして深める）</option>
+          <option>どちらでも</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-eyebrow">希望Job</div>
+      <div style="margin-bottom:10px">
+        <div class="form-label">第1希望 <span class="req">*</span></div>
+        <select class="form-select">
+          <option selected>東南アジア新規開拓担当（海外事業部）</option>
+          <option>食品部 営業マネージャー（食品部）</option>
+          <option>経営企画スタッフ（経営企画部）</option>
+          <option>素材部 海外営業リーダー（素材・化学部）</option>
+        </select>
+      </div>
+      <div class="form-row" style="margin-bottom:10px">
+        <div>
+          <div class="form-label">第2希望</div>
+          <select class="form-select">
+            <option>素材部 海外営業リーダー（素材・化学部）</option>
+            <option>食品部 営業マネージャー（食品部）</option>
+            <option selected>経営企画スタッフ（経営企画部）</option>
+          </select>
+        </div>
+        <div>
+          <div class="form-label">第3希望</div>
+          <select class="form-select">
+            <option selected>— 選択しない —</option>
+            <option>人事企画担当（人事部）</option>
+            <option>機械部門 技術営業（機械・インフラ部）</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <div class="form-label">希望時期 <span class="req">*</span></div>
+        <select class="form-select">
+          <option selected>すぐにでも</option>
+          <option>半年以内</option>
+          <option>1年以内</option>
+          <option>時期未定</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-eyebrow">補足（任意）</div>
+      <div class="form-label">人事へのメッセージ</div>
+      <textarea class="form-textarea" style="min-height:60px">タイでの赴任経験（2年）を活かせるポジションを強く希望しています。ぜひ一度面談の機会をいただけると幸いです。</textarea>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:12px;font-size:14px" onclick="saveProfile()">プロフィールを保存する</button>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Job登録モーダル -->
+<div class="modal-bg" id="job-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">新規Job登録</div>
+      <div class="modal-close" onclick="closeJobModal()">×</div>
+    </div>
+    <div class="form-row" style="margin-bottom:10px">
+      <div><div class="form-label">ポジション名 <span class="req">*</span></div><input class="form-input" placeholder="例：東南アジア新規開拓担当"></div>
+      <div><div class="form-label">部署 <span class="req">*</span></div><input class="form-input" placeholder="例：海外事業部"></div>
+    </div>
+    <div style="margin-bottom:10px"><div class="form-label">業務内容 <span class="req">*</span></div><textarea class="form-textarea" placeholder="日々何をするか。3〜5項目が目安。"></textarea></div>
+    <div style="margin-bottom:10px"><div class="form-label">期待役割 <span class="req">*</span></div><textarea class="form-textarea" placeholder="組織の中でどんな存在であってほしいか。"></textarea></div>
+    <div class="form-row" style="margin-bottom:10px">
+      <div><div class="form-label">必須スキル <span class="req">*</span></div><textarea class="form-textarea" style="min-height:56px" placeholder="例：法人営業5年以上、英語ビジネスレベル"></textarea></div>
+      <div><div class="form-label">あれば尚可</div><textarea class="form-textarea" style="min-height:56px" placeholder="例：タイ語、海外赴任経験"></textarea></div>
+    </div>
+    <div style="margin-bottom:10px"><div class="form-label">求めるスタンス・姿勢 <span class="req">*</span></div><textarea class="form-textarea" placeholder="スキルでは測れないあり方を。"></textarea></div>
+    <div style="margin-bottom:10px"><div class="form-label">この先の期待 <span class="req">*</span></div><textarea class="form-textarea" placeholder="1〜3年後にどうなってほしいか。"></textarea></div>
+    <div class="form-row" style="margin-bottom:16px">
+      <div><div class="form-label">募集人数</div><input class="form-input" placeholder="例：1名"></div>
+      <div><div class="form-label">着任希望時期</div><input class="form-input" placeholder="例：2026年10月"></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:11px" onclick="submitJob()">このJobを登録・公開する</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+var role='hr';
+var selAnchors=[];
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
+  document.getElementById('page-'+id).classList.add('active');
+}
+
+function showMatchingForJob(name){
+  document.getElementById('matching-topbar-title').textContent='マッチング結果 — '+name;
+  showPage('matching');
+}
+
+function changeMatchingJob(val){
+  document.getElementById('matching-topbar-title').textContent='マッチング結果 — '+val;
+}
+
+function switchRole(){
+  role=role==='hr'?'emp':'hr';
+  document.getElementById('sidebar-hr').style.display=role==='hr'?'block':'none';
+  document.getElementById('sidebar-emp').style.display=role==='emp'?'block':'none';
+  if(role==='hr'){
+    document.getElementById('user-name').textContent='鈴木 花子';
+    document.getElementById('user-role').textContent='人事部';
+    document.getElementById('avatar-initials').textContent='鈴';
+    showPage('dashboard');
+  } else {
+    document.getElementById('user-name').textContent='田中 誠一';
+    document.getElementById('user-role').textContent='食品部 営業';
+    document.getElementById('avatar-initials').textContent='田';
+    showPage('job-list');
+  }
+}
+
+function toggleAnchor(el){
+  var name=el.querySelector('.an').textContent;
+  if(el.classList.contains('sel')){
+    el.classList.remove('sel');
+    selAnchors=selAnchors.filter(function(a){return a!==name});
+  } else {
+    if(selAnchors.length>=2){
+      var grid=document.getElementById('pf-anchors');
+      var first=grid.querySelector('.anchor-btn.sel');
+      if(first){first.classList.remove('sel');selAnchors.shift();}
+    }
+    el.classList.add('sel');
+    selAnchors.push(name);
+  }
+}
+
+function openJobModal(){document.getElementById('job-modal').classList.add('open')}
+function closeJobModal(){document.getElementById('job-modal').classList.remove('open')}
+
+function submitJob(){
+  closeJobModal();
+  showToast('Jobを登録・公開しました');
+}
+
+function applyJob(btn,name){
+  btn.textContent='応募済み';
+  btn.className='badge badge-applied';
+  btn.style.cursor='default';
+  btn.onclick=null;
+  showToast(name+' に応募しました');
+}
+
+function saveProfile(){showToast('プロフィールを保存しました')}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent='✓  '+msg;
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show')},2500);
+}
+
+document.getElementById('job-modal').addEventListener('click',function(e){
+  if(e.target===this)closeJobModal();
+});
+</script>
+</body>
+</html>
